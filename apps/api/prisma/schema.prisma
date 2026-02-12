@@ -1,0 +1,88 @@
+// ─── Prisma Schema ───────────────────────────────────────────
+// StreamSync domain model — matches §7 of the design doc
+// Using SQLite for easy local development (switch to PostgreSQL for production)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Models ──────────────────────────────────────────────────
+// Note: SQLite doesn't support enums, so we use String fields
+// with application-level validation via Zod schemas.
+
+model User {
+  id          String   @id @default(uuid())
+  displayName String   @map("display_name")
+  email       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  createdRooms Room[]       @relation("RoomCreator")
+  memberships  RoomMember[]
+  swipes       Swipe[]
+
+  @@map("users")
+}
+
+model Room {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  region    String   @default("US")
+  matchRule String   @default("any_two") @map("match_rule")
+  createdBy String   @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  creator  User         @relation("RoomCreator", fields: [createdBy], references: [id])
+  members  RoomMember[]
+  swipes   Swipe[]
+  matches  Match[]
+
+  @@map("rooms")
+}
+
+model RoomMember {
+  roomId          String  @map("room_id")
+  userId          String  @map("user_id")
+  activeProviders String  @default("[]") @map("active_providers")
+  ready           Boolean @default(false)
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([roomId, userId])
+  @@map("room_members")
+}
+
+model Swipe {
+  id        String   @id @default(uuid())
+  roomId    String   @map("room_id")
+  userId    String   @map("user_id")
+  tmdbId    Int      @map("tmdb_id")
+  mediaType String   @map("media_type")
+  decision  String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId, tmdbId, mediaType])
+  @@index([roomId, tmdbId, mediaType])
+  @@map("swipes")
+}
+
+model Match {
+  id        String   @id @default(uuid())
+  roomId    String   @map("room_id")
+  tmdbId    Int      @map("tmdb_id")
+  mediaType String   @map("media_type")
+  matchedAt DateTime @default(now()) @map("matched_at")
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, tmdbId, mediaType])
+  @@map("matches")
+}

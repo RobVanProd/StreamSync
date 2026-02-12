@@ -1,0 +1,21 @@
+{
+  "name": "streamsync",
+  "version": "0.1.0",
+  "private": true,
+  "description": "StreamSync — swipe-to-match what to watch together",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev --workspace=apps/api",
+    "dev:mobile": "npm run dev --workspace=apps/mobile",
+    "build:shared": "npm run build --workspace=packages/shared",
+    "build:api": "npm run build --workspace=apps/api",
+    "lint": "echo \"Run lint in each workspace\"",
+    "clean": "rimraf **/node_modules **/dist **/.turbo"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
