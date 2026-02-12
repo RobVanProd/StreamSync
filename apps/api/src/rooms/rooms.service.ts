@@ -101,4 +101,24 @@ export class RoomsService {
 
         return intersection;
     }
+    /** Get the union of active providers across all ready members. */
+    async getProviderUnion(roomId: string): Promise<number[]> {
+        const members = await this.prisma.roomMember.findMany({
+            where: { roomId, ready: true },
+        });
+
+        if (members.length === 0) return [];
+
+        const providerSets = members.map(
+            (m) => new Set(this.parseProviders(m.activeProviders)),
+        );
+
+        // Union of all sets
+        const union = new Set<number>();
+        for (const set of providerSets) {
+            for (const id of set) union.add(id);
+        }
+
+        return Array.from(union);
+    }
 }

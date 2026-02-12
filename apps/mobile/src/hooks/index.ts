@@ -1,3 +1,4 @@
-export { useStack } from './useStack';
-export { useRoom } from './useRoom';
-export { useSocket } from './useSocket';
+export * from './useRoom';
+export * from './useStack';
+export * from './useSocket';
+export * from './useMatches';

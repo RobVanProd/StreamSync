@@ -79,6 +79,11 @@ model Match {
   roomId    String   @map("room_id")
   tmdbId    Int      @map("tmdb_id")
   mediaType String   @map("media_type")
+  title     String
+  posterPath String? @map("poster_path")
+  overview  String   @default("")
+  releaseDate String? @map("release_date")
+  voteAverage Float  @default(0) @map("vote_average")
   matchedAt DateTime @default(now()) @map("matched_at")
 
   room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)

@@ -56,23 +56,51 @@ export class SwipesService {
             return { matched: false };
         }
 
-        // 4. Create match (unique constraint prevents duplicates / race conditions)
+        // 4. Match found! Fetch metadata to store (so we don't need N+1 calls later)
+        let title = 'Matched Title';
+        let posterPath: string | null = null;
+        let overview = '';
+        let releaseDate: string | null = null;
+        let voteAverage = 0;
+
+        try {
+            const details = await this.tmdb.getDetails(tmdbId, mediaType);
+            if (details) {
+                title = details.title;
+                posterPath = details.posterPath;
+                overview = details.overview;
+                releaseDate = details.releaseDate;
+                voteAverage = details.voteAverage;
+            }
+        } catch (error) {
+            this.logger.warn(`Failed to fetch details for match ${tmdbId}: ${error}`);
+        }
+
         try {
             const match = await this.prisma.match.create({
-                data: { roomId, tmdbId, mediaType },
+                data: {
+                    roomId,
+                    tmdbId,
+                    mediaType,
+                    title,
+                    posterPath,
+                    overview,
+                    releaseDate,
+                    voteAverage,
+                },
             });
 
             // 5. Build title card for the socket event
             const titleCard: TitleCard = {
                 tmdbId,
                 mediaType,
-                title: 'Matched Title', // Enriched below
-                overview: '',
-                posterPath: null,
+                title,
+                overview,
+                posterPath,
                 backdropPath: null,
-                releaseDate: null,
-                voteAverage: 0,
-                genreIds: [],
+                releaseDate,
+                voteAverage,
+                genreIds: [], // We could fetch these too if needed
                 providerIds: [],
             };
 
@@ -94,5 +122,6 @@ export class SwipesService {
             }
             throw err;
         }
+
     }
 }

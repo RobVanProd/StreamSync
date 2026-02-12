@@ -29,10 +29,15 @@ export class StackService {
         mediaType: MediaType,
         limit: number,
     ) {
-        // 1. Get provider intersection
-        const providers = await this.rooms.getProviderIntersection(roomId);
+        // 1. Get provider intersection; if empty, use union (so we show *something*)
+        let providers = await this.rooms.getProviderIntersection(roomId);
         if (providers.length === 0) {
-            return { cards: [], page: 1, hasMore: false };
+            providers = await this.rooms.getProviderUnion(roomId);
+        }
+
+        // If still empty (no one selected anything), default to "popular on Netflix/Disney+"
+        if (providers.length === 0) {
+            providers = [8, 337];
         }
 
         // 2. Get room region

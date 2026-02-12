@@ -96,4 +96,26 @@ export class TmdbService {
             return null;
         }
     }
+    /** Fetch detailed info for a specific title. */
+    async getDetails(tmdbId: number, mediaType: MediaType): Promise<TitleCard | null> {
+        try {
+            const { data } = await this.http.get(`/${mediaType}/${tmdbId}`);
+
+            return {
+                tmdbId: data.id,
+                mediaType,
+                title: data.title ?? data.name ?? 'Unknown',
+                overview: data.overview,
+                posterPath: data.poster_path,
+                backdropPath: data.backdrop_path,
+                releaseDate: data.release_date ?? data.first_air_date ?? null,
+                voteAverage: data.vote_average,
+                genreIds: data.genres?.map((g: any) => g.id) ?? [],
+                providerIds: [], // Not fetched here, but could be added if needed
+            };
+        } catch (err: any) {
+            this.logger.error(`TMDb details failed for ${mediaType}/${tmdbId}: ${err.message}`);
+            return null;
+        }
+    }
 }

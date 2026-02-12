@@ -37,10 +37,16 @@ export interface Swipe {
 }
 
 export interface Match {
+    id: string;
     roomId: string;
     tmdbId: number;
     mediaType: MediaType;
     matchedAt: string;
+    title: string;
+    overview: string;
+    posterPath: string | null;
+    releaseDate: string | null;
+    voteAverage: number;
 }
 
 // ─── Title / Card Types ──────────────────────────────────────
@@ -96,7 +102,7 @@ export interface SwipeResponse {
 }
 
 export interface MatchesResponse {
-    matches: (Match & { title: TitleCard })[];
+    matches: Match[];
 }
 
 // ─── Auth ────────────────────────────────────────────────────
